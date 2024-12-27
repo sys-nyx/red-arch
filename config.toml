@@ -1,7 +1,9 @@
-[funny]
-comments = funny_comments.json
-posts = funny_submissions.json
 
+[funny] #subreddit name
+comments = funny_comments.json #path to pushshift comments file
+posts = funny_submissions.json #path to pushshift submissions file
+
+# add other sets of dumps as needed
 [funnymemes]
 comments = funnymemes_comments.json
 posts = funnymemes_submissions.json
