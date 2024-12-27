@@ -4,7 +4,6 @@ import argparse
 import csv
 import os
 import re
-import snudown
 import psutil
 
 url_project = 'https://github.com/libertysoft3/reddit-html-archiver'
@@ -125,7 +124,7 @@ def generate_html(subs: list[str], sub_dict, min_score=0, min_comments=0, hide_d
                 if 'comments' in t:
                     stat_sub_comments += len(t['comments'])
             if built % 100 == 0:
-                print(f"{built}/ {len(threads)}") 
+                print(f"\r{built}/ {len(threads)}", end="") 
         if stat_sub_filtered_links > 0:
             processed_subs.append({'name': sub, 'num_links': stat_sub_filtered_links})
         print('%s: %s links filtered to %s' % (sub, stat_sub_links, stat_sub_filtered_links))
@@ -287,7 +286,7 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
             '###DEPTH###':              str(c['depth']),
             '###DATE###':               created.strftime('%Y-%m-%d'),
             '###SCORE###':              str(c['score']) if len(str(c['score'])) > 0 else missing_comment_score_label,
-            '###BODY###':               snudown.markdown(c['body'].replace('&gt;','>')),
+            '###BODY###':               c['body'],
             '###CSS_CLASSES###':        css_classes,
             '###CLASS_SCORE###':        'badge-danger' if c['score'] > 0 and int(c['score']) < 1 else 'badge-secondary',
             '###HTML_AUTHOR_URL###':    author_link_html,
@@ -306,7 +305,7 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
     # render selftext
     selftext_html = ''
     if len(link['selftext']) > 0:
-        selftext_html = template_selftext.replace('###SELFTEXT###', snudown.markdown(link['selftext'].replace('&gt;','>')))
+        selftext_html = template_selftext.replace('###SELFTEXT###', link['selftext'])
 
     # author link
     url = static_include_path + 'user/' + link['author'] + '.html'
