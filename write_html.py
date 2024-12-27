@@ -95,53 +95,55 @@ with open('templates/partial_url.html', 'r', encoding='utf-8') as file:
 
 process = psutil.Process(os.getpid())
 
-def generate_html(min_score=0, min_comments=0, hide_deleted_comments=False):
+def generate_html(subs: list[str], sub_dict, min_score=0, min_comments=0, hide_deleted_comments=False):
     delta = timedelta(days=1)
-    subs = get_subs()
     user_index = {}
     processed_subs = []
     stat_links = 0
     stat_filtered_links = 0
 
     for sub in subs:
+        print("Building current sub: ", sub)
+
+        threads = sub_dict[sub]
+        print("Total threads to convert: ", len(threads))
+        built = 0
         # write link pages
         # print('generate_html() processing %s %s kb' % (sub, int(int(process.memory_info().rss) / 1024)))
         stat_sub_links = 0
         stat_sub_filtered_links = 0
         stat_sub_comments = 0
         d = start_date
-        while d <= end_date:
-            raw_links = load_links(d, sub, True)
-            stat_links += len(raw_links)
-            stat_sub_links += len(raw_links)
-            for l in raw_links:
-                if validate_link(l, min_score, min_comments):
-                    write_link_page(subs, l, sub, hide_deleted_comments)
-                    stat_filtered_links += 1
-                    stat_sub_filtered_links += 1
-                    if 'comments' in l:
-                        stat_sub_comments += len(l['comments'])
-            d += delta
+        stat_links += len(threads)
+        stat_sub_links += len(threads)
+        for t in threads:
+            if validate_link(t, min_score, min_comments):
+                write_link_page(subs, t, sub, hide_deleted_comments)
+                built += 1
+                stat_filtered_links += 1
+                stat_sub_filtered_links += 1
+                if 'comments' in t:
+                    stat_sub_comments += len(t['comments'])
+            if built % 100 == 0:
+                print(f"{built}/ {len(threads)}") 
         if stat_sub_filtered_links > 0:
             processed_subs.append({'name': sub, 'num_links': stat_sub_filtered_links})
         print('%s: %s links filtered to %s' % (sub, stat_sub_links, stat_sub_filtered_links))
 
         # write subreddit pages
         valid_sub_links = []
-        d = start_date
-        while d <= end_date:
-            raw_links = load_links(d, sub)
-            for l in raw_links:
-                if validate_link(l, min_score, min_comments):
-                    valid_sub_links.append(l)
 
-                    # collect links for user pages
-                    # TODO: this is the least performant bit. load and generate user pages user by user instead.
-                    l['subreddit'] = sub
-                    if l['author'] not in user_index.keys():
-                        user_index[l['author']] = []
-                    user_index[l['author']].append(l)
-            d += delta
+
+        for t in threads:
+            if validate_link(t, min_score, min_comments):
+                valid_sub_links.append(t)
+
+                # collect links for user pages
+                # TODO: this is the least performant bit. load and generate user pages user by user instead.
+                t['subreddit'] = sub
+                if t['author'] not in user_index.keys():
+                    user_index[t['author']] = []
+                user_index[t['author']].append(t)
         write_subreddit_pages(sub, subs, valid_sub_links, stat_sub_filtered_links, stat_sub_comments)
         write_subreddit_search_page(sub, subs, valid_sub_links, stat_sub_filtered_links, stat_sub_comments)
 
@@ -202,7 +204,7 @@ def write_subreddit_pages(subreddit, subs, link_index, stat_sub_filtered_links, 
                 }
                 link_html = template_link_url
                 for key, value in index_link_data_map.items():
-                    link_html = link_html.replace(key, value)
+                    link_html = link_html.replace(key, str(value))
                 links_html += link_html + '\n'
 
             index_page_data_map = {
@@ -272,7 +274,7 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
         css_classes = 'ml-' + (str(c['depth']) if int(c['depth']) <= max_comment_depth else str(max_comment_depth))
         if c['author'] == link['author'] and c['author'] not in removed_content_identifiers:
             css_classes += ' op'
-        if c['stickied'].lower() == 'true' or c['stickied'] is True:
+        if c['stickied'] is True:
             css_classes += ' stickied'
 
         # author link
@@ -287,12 +289,12 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
             '###SCORE###':              str(c['score']) if len(str(c['score'])) > 0 else missing_comment_score_label,
             '###BODY###':               snudown.markdown(c['body'].replace('&gt;','>')),
             '###CSS_CLASSES###':        css_classes,
-            '###CLASS_SCORE###':        'badge-danger' if len(c['score']) > 0 and int(c['score']) < 1 else 'badge-secondary',
+            '###CLASS_SCORE###':        'badge-danger' if c['score'] > 0 and int(c['score']) < 1 else 'badge-secondary',
             '###HTML_AUTHOR_URL###':    author_link_html,
         }
         comment_html = template_comment
         for key, value in comment_data_map.items():
-            comment_html = comment_html.replace(key, value)
+            comment_html = comment_html.replace(key, str(value))
         comments_html += comment_html + '\n'
 
     # render subreddits list
@@ -310,8 +312,8 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
     url = static_include_path + 'user/' + link['author'] + '.html'
     author_link_html = template_user_url.replace('###URL_AUTHOR###', url).replace('###AUTHOR###', link['author'])
 
-    html_title = template_url.replace('#HREF#', link['url']).replace('#INNER_HTML#', link['title'])
-    if link['is_self'] is True or link['is_self'].lower() == 'true':
+    html_title = template_url.replace('#INNER_HTML#', link['title'])
+    if link['is_self'] is True:
         html_title = link['title']
 
     # render link page
@@ -321,7 +323,7 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
         '###TITLE###':              link['title'],
         '###ID###':                 link['id'],
         '###DATE###':               created.strftime('%Y-%m-%d'),
-        '###ARCHIVE_DATE###':       datetime.utcfromtimestamp(int(link['retrieved_on'])).strftime('%Y-%m-%d') if link['retrieved_on'] != '' else 'n/a',
+        # '###ARCHIVE_DATE###':       datetime.utcfromtimestamp(int(link['retrieved_on'])).strftime('%Y-%m-%d') if link['retrieved_on'] != '' else 'n/a',
         '###SCORE###':              str(link['score']),
         '###NUM_COMMENTS###':       str(link['num_comments']),
         '###URL_PROJECT###':        url_project,
@@ -379,7 +381,7 @@ def write_subreddit_search_page(subreddit, subs, link_index, stat_sub_filtered_l
         }
         link_html = template_search_link
         for key, value in index_link_data_map.items():
-            link_html = link_html.replace(key, value)
+            link_html = link_html.replace(key, str(value))
         links_html += link_html + '\n'
 
     index_page_data_map = {
@@ -458,7 +460,7 @@ def write_user_page(subs, user_index):
             }
             link_html = template_user_page_link
             for key, value in link_data_map.items():
-                link_html = link_html.replace(key, value)
+                link_html = link_html.replace(key, str(value))
             links_html += link_html + '\n'
 
         page_data_map = {
@@ -536,7 +538,7 @@ def sort_comments(comments, hide_deleted_comments=False):
         id_map[c['id']] = c
         parent_map[c['id']] = c['parent_id']
         # add stickied comments
-        if c['stickied'].lower() == 'true':
+        if c['stickied'] == True:
             sorted_comments.append(c)
         # store top level comments      
         elif c['parent_id'] == c['link_id']:
@@ -561,7 +563,7 @@ def sort_comments(comments, hide_deleted_comments=False):
 
     # add orphaned comments
     for c in comments:
-        if c['parent_id'] != link_id and c['parent_id'].replace('t1_', '') not in id_map.keys():
+        if c['parent_id'] != link_id and str(c['parent_id']).replace('t1_', '') not in id_map.keys():
             if hide_deleted_comments and c['body'] in removed_content_identifiers:
                 continue
             sorted_linear_comments.append(c)
@@ -606,31 +608,6 @@ def validate_link(link, min_score=0, min_comments=0):
             return False
 
     return True
-
-def load_links(date, subreddit, with_comments=False):
-    links = []
-    if not date or not subreddit:
-        return links
-
-    date_path = date.strftime("%Y/%m/%d")
-    daily_path = 'data/' + subreddit + '/' + date_path
-    daily_links_path = daily_path + '/' + source_data_links
-    if os.path.isfile(daily_links_path):
-        links = []
-        with open(daily_links_path, 'r', encoding='utf-8') as links_file:
-            reader = csv.DictReader(links_file)
-            for link_row in reader:
-                if with_comments and 'id' in link_row.keys():
-                    comments = []
-                    comments_file_path = daily_path + '/' + link_row['id'] + '.csv'
-                    if os.path.isfile(comments_file_path):
-                        with open(comments_file_path, 'r', encoding='utf-8') as comments_file:
-                            reader = csv.DictReader(comments_file)
-                            for comment_row in reader:
-                                comments.append(comment_row)
-                    link_row['comments'] = comments
-                links.append(link_row)
-    return links
 
 def get_subs():
     subs = []
