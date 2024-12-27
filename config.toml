@@ -1,0 +1,7 @@
+[funny]
+comments = funny_comments.json
+posts = funny_submissions.json
+
+[funnymemes]
+comments = funnymemes_comments.json
+posts = funnymemes_submissions.json
