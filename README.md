@@ -7,7 +7,7 @@ The goal of this project is to provide a framework for archiving websites and so
 - Its written in python which will make integration with other web scrapers or data dumps very simple.
 - Takes minimal changes to accept data from popular reddit data dumps such as pushshift
 
-At the moment this project is limited to creating static sites from https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10. the user responsible for those uploads provides a repo [here](https://github.com/Watchful1/PushshiftDumps) with some tools for parsing through the files contained in the torrent. This repo provides a modified version of their 'single_file.py' as 'watchful.py' (named after its creator) which can be used as to convert the subreddit dumps into valid python dictionaries and then used to create a website using reddit-html-archiver.
+At the moment this project is limited to creating static sites from https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10. the user responsible for those uploads provides a repo [here](https://github.com/Watchful1/PushshiftDumps) with some tools for parsing through the files contained in the torrent. This repo (red-arch) provides a modified version of their 'single_file.py' as 'watchful.py' (named after its creator) which can be used as to convert the subreddit dumps into valid python dictionaries and then used to create a website using reddit-html-archiver.
  
 ### install
 
