@@ -20,7 +20,7 @@ pip install requirements.txt
 ```
 
 ### Usage
-
+create json files for multiple subreddits
 ```
 cd red-arch/
 python3 watchful.py subname1_submissions.zst subname1_submissions.json
@@ -35,6 +35,8 @@ python3 watchful.py subname2_comments.zst subname2_comments.json
 nano config.toml
 
 ```
+add multiple entries to config (or just one)
+
 ```
 [subname1]
 comments= subname1_comments.json
@@ -45,6 +47,7 @@ comments= subname2_comments.json
 posts= subname2_submissions.json
 ```
 
+build the site
 ```
 dumps.py config.toml
 ```
@@ -53,10 +56,20 @@ The resulting website will be located within the 'r/' directory and can be viewe
 
 The maintainers of this repo are NOT responsible for any problems with your system or data loss that might occur from using anything contained within this repo to modify your local files. Please make copies of our data before you begin modifying it. 
 
-## Below is the readme from the original repository. [reddit-html-archiver](https://github.com/libertysoft3/reddit-html-archiver)
-Please note that it is ONLY included here for archival purposes and does not necessarily reflect the goals/intentions/usage of red-arch.  
 
-python3
+## TODO
+- Create a unified script for building from zst files from push shift dumps
+- Create a more modular API for parsing data from a variety of sources
+- Incorporate a local, static site search such as [lunrjs](https://github.com/olivernn/lunr.js)
+- Create a web scraper with a more robust feature set
+
+## Contribute
+if you would like to contribute just let me know!
+  
+## Below is the readme from the original repository. [reddit-html-archiver](https://github.com/libertysoft3/reddit-html-archiver)
+Please note that it is ONLY included here for archival purposes and does not necessarily reflect the goals/intentions/usageopinons/etc of red-arch.  
+
+
 ## reddit html archiver
 
 pulls reddit data from the [pushshift](https://github.com/pushshift/api) api and renders offline compatible html pages. uses the reddit markdown renderer.
