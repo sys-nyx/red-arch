@@ -1,0 +1,4 @@
+psaw==0.1.0
+psutil==6.1.1
+snudown==1.0.0
+zstandard==0.23.0
