@@ -67,9 +67,9 @@ def return_redd_objects(path: str) -> list[dict]:
 			bad_lines += 1
 		file_lines += 1
 	
-		if file_lines % 100000 == 0:
-			log.info(f"{created.strftime('%Y-%m-%d %H:%M:%S')} : {file_lines:,} : {bad_lines:,} : {file_bytes_processed:,}:{(file_bytes_processed / file_size) * 100:.0f}%")
-	log.info(f"Complete : {file_lines:,} : {bad_lines:,}")
+		if file_lines % 1000 == 0:
+			print(f"\rReading {(file_bytes_processed / file_size) * 100:.0f}%", end="")
+	print(f"Complete : {file_lines:,} : {bad_lines:,}")
 	return objects
 	
 if __name__=="__main__":
