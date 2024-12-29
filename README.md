@@ -7,7 +7,7 @@ The goal of this project is to provide a framework for archiving websites and so
 - Its written in python which will make integration with other web scrapers or data dumps very simple.
 - Takes minimal changes to accept data from popular reddit data dumps such as pushshift
 
-At the moment this project is limited to creating static sites from https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10. the user responsible for those uploads provides a repo [here](https://github.com/Watchful1/PushshiftDumps) with some tools for parsing through the files contained in the torrent. This repo provides a modified version of their 'single_file.py' as 'watchful.py' (named after its creator) which can be used as to convert the subreddit dumps into json files. Those files can then be added to config.toml and used to create a website using reddit-html-archiver.
+At the moment this project is limited to creating static sites from https://academictorrents.com/details/56aa49f9653ba545f48df2e33679f014d2829c10. the user responsible for those uploads provides a repo [here](https://github.com/Watchful1/PushshiftDumps) with some tools for parsing through the files contained in the torrent. This repo (red-arch) provides a modified version of their 'single_file.py' as 'watchful.py' (named after its creator) which can be used as to convert the subreddit dumps into valid python dictionaries and then used to create a website using reddit-html-archiver.
  
 ### install
 
@@ -20,16 +20,6 @@ pip install requirements.txt
 ```
 
 ### Usage
-create json files for multiple subreddits
-```
-cd red-arch/
-python3 watchful.py subname1_submissions.zst subname1_submissions.json
-python3 watchful.py subname1_comments.zst subname1_comments.json
-
-python3 watchful.py subname2_submissions.zst subname2_submissions.json
-python3 watchful.py subname2_comments.zst subname2_comments.json
-
-```
 
 ```
 nano config.toml
@@ -39,17 +29,17 @@ add multiple entries to config (or just one)
 
 ```
 [subname1]
-comments= subname1_comments.json
-posts= subname1_submissions.json
+comments= subname1_comments.zst
+posts= subname1_submissions.zst
 
 [subname2]
-comments= subname2_comments.json
-posts= subname2_submissions.json
+comments= subname2_comments.zst
+posts= subname2_submissions.zst
 ```
 
-build the site
+Build the site.
 ```
-dumps.py config.toml
+redarch.py config.toml
 ```
 
 The resulting website will be located within the 'r/' directory and can be viewed by placing it in the webroot of any http server OR by opening index.html in your browser. 
@@ -58,10 +48,12 @@ The maintainers of this repo are NOT responsible for any problems with your syst
 
 
 ## TODO
-- Create a unified script for building from zst files from push shift dumps
-- Create a more modular API for parsing data from a variety of sources
 - Incorporate a local, static site search such as [lunrjs](https://github.com/olivernn/lunr.js)
+- Create a more modular API for parsing data from a variety of sources
 - Create a web scraper with a more robust feature set
+- Refactor code and improve buildtime
+- Reduce final build size
+- Incorporate a real templating engine such as Jinja 
 
 ## Contribute
 if you would like to contribute just let me know!
@@ -69,7 +61,7 @@ if you would like to contribute just let me know!
 ## Below is the readme from the original repository. [reddit-html-archiver](https://github.com/libertysoft3/reddit-html-archiver)
 Please note that it is ONLY included here for archival purposes and does not necessarily reflect the goals/intentions/usageopinons/etc of red-arch.  
 
-
+```
 ## reddit html archiver
 
 pulls reddit data from the [pushshift](https://github.com/pushshift/api) api and renders offline compatible html pages. uses the reddit markdown renderer.
@@ -168,3 +160,4 @@ copy the contents of the `r` directory to a web root or appropriately served git
 
 ![](screenshots/sub.jpg)
 ![](screenshots/post.jpg)
+```
