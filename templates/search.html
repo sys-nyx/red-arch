@@ -6,6 +6,23 @@
     <link rel="stylesheet" href="###INCLUDE_PATH###static/css/lato.css">
     <link rel="stylesheet" href="###INCLUDE_PATH###static/css/bootstrap-superhero.min.css">
     <link rel="stylesheet" href="###INCLUDE_PATH###static/css/archive.css">
+    <script>
+      const searchWorker = new Worker("../static/js/search.js");
+      function displaySearch(results) {
+          let links = document.querySelector('.links')
+          links.innerHTML = ''
+          results.forEach(element => {
+            console.log(element.ref);
+            
+               r = document.createElement('div')
+               r.innerHTML = `<a href=${element.ref} class='link'>${element.ref}</a>`
+               links.appendChild(r)
+          });
+      }
+      searchWorker.onmessage = (e) => {
+          displaySearch(e.data)
+      }
+  </script>
     <title>r/###SUB### ###TITLE###</title>
   </head>
   <body>
@@ -41,8 +58,13 @@
       </nav>
     </header>
     <main role="main" class="container-fluid">
+      <form class="search">
+        <input type="text" name="query" id="query">
+        <input type="button" class="btn btn-info" value="Search" onclick="searchWorker.postMessage(query.value)">></form>
+
+        </form>
       <div class="links search mt-3">
-        ###HTML_LINKS###
+        
       </div>
     </main>
     <footer class="container-fluid">
@@ -50,5 +72,15 @@
     </footer>
     <script src="###INCLUDE_PATH###static/js/jquery-3.3.1.slim.min.js"></script>
     <script src="###INCLUDE_PATH###static/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function() {
+  $(window).keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });
+});
+    </script>
   </body>
 </html>
