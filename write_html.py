@@ -116,6 +116,7 @@ def generate_html(subs: list[str], sub_dict, min_score=0, min_comments=0, hide_d
         stat_links += len(threads)
         stat_sub_links += len(threads)
         for t in threads:
+            print(t['id'])
             if validate_link(t, min_score, min_comments):
                 write_link_page(subs, t, sub, hide_deleted_comments)
                 built += 1
@@ -183,10 +184,11 @@ def write_subreddit_pages(subreddit, subs, link_index, stat_sub_filtered_links, 
                 author_link_html = author_link_html.replace('###URL_AUTHOR###', author_url).replace('###AUTHOR###', l['author'])
 
                 link_url = l['url']
+                # link_comments_url = sort_based_prefix + l['permalink'].lower().strip('/')
                 link_comments_url = sort_based_prefix + l['permalink'].lower().strip('/')
                 link_comments_url = link_comments_url.replace('r/' + subreddit + '/', '')
-                idpath = '/'.join(list(l['id']))
-                link_comments_url = link_comments_url.replace(l['id'], idpath)
+                # idpath = '/'.join(list(l['id']))
+                # link_comments_url = link_comments_url.replace(l['id'], idpath)
                 link_comments_url += '.html'
                 if l['is_self'] is True or l['is_self'] == 'True':
                     link_url = link_comments_url
@@ -251,9 +253,10 @@ def write_subreddit_pages(subreddit, subs, link_index, stat_sub_filtered_links, 
 def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False):
     # reddit:  https://www.reddit.com/r/conspiracy/comments/8742iv/happening_now_classmate_former_friend_of/
     # archive: r/conspiracy/comments/8/7/4/2/i/v/happening_now_classmate_former_friend_of.html
-    idpath = '/'.join(list(link['id']))
+    # idpath = '/'.join(list(link['id']))
     filepath = link['permalink'].lower().strip('/') + '.html'
-    filepath = filepath.replace(link['id'], idpath)
+    # filepath = filepath.replace(link['id'], idpath)
+    # filepath = link['permalink']
     if os.path.isfile(filepath):
         return True
 
@@ -344,9 +347,9 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
     # write html
     # reddit:  https://www.reddit.com/r/conspiracy/comments/8742iv/happening_now_classmate_former_friend_of/
     # archive: r/conspiracy/comments/8/7/4/2/i/v/happening_now_classmate_former_friend_of.html
-    idpath = '/'.join(list(link['id']))
+    # idpath = '/'.join(list(link['id']))
     filepath = link['permalink'].lower().strip('/') + '.html'
-    filepath = filepath.replace(link['id'], idpath)
+    # filepath = filepath.replace(link['id'], idpath)
     if not os.path.isfile(filepath):
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, 'w', encoding='utf-8') as file:
@@ -371,8 +374,8 @@ def write_subreddit_search_page(subreddit, subs, link_index, stat_sub_filtered_l
     links_html = ''
     for l in links:
         link_comments_url = l['permalink'].lower().strip('/').replace('r/' + subreddit + '/', '')
-        idpath = '/'.join(list(l['id']))
-        link_comments_url = link_comments_url.replace(l['id'], idpath)
+        # idpath = '/'.join(list(l['id']))
+        # link_comments_url = link_comments_url.replace(l['id'], idpath)
         link_comments_url += '.html'
         index_link_data_map = {
             '###TITLE###':              l['title'],
@@ -439,8 +442,8 @@ def write_user_page(subs, user_index):
 
             link_comments_url = l['permalink'].lower().replace('/r/', '').strip('/')
             link_comments_url = '../' + link_comments_url
-            idpath = '/'.join(list(l['id']))
-            link_comments_url = link_comments_url.replace(l['id'], idpath)
+            # idpath = '/'.join(list(l['id']))
+            # link_comments_url = link_comments_url.replace(l['id'], idpath)
             link_comments_url += '.html'
             link_url = l['url']
             if l['is_self'] is True or l['is_self'] == 'True':
