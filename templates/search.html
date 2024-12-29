@@ -12,11 +12,20 @@
           let links = document.querySelector('.links')
           links.innerHTML = ''
           results.forEach(element => {
-            console.log(element.ref);
             
-               r = document.createElement('div')
-               r.innerHTML = `<a href=${element.ref} class='link'>${element.ref}</a>`
-               links.appendChild(r)
+            d = document.createElement('div')
+            d.classList.add('search-result')
+            t = document.createElement('a')
+            t.innerText = r.meta.title
+            t.href = r.meta.path
+            t.class = 'link'
+
+            p = document.createElement('p')
+            p.innerText = r.meta.body_short.replace(/[\n\r\t]/g, " ")
+              
+            d.appendChild(t)
+            d.appendChild(p)
+            links.appendChild(d)
           });
       }
       searchWorker.onmessage = (e) => {
