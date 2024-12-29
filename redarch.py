@@ -109,6 +109,8 @@ def main():
 
     idxs, metadata = get_lunr_posts_index(subreddits)
 
+    os.makedirs('r/static/js/search/', exist_ok=True)
+
     idx_path_list = []
     for idx in idxs:
         idx_name = f'static/js/search/idx-00{idxs.index(idx) + 1}.json'
