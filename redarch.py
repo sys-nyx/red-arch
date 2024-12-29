@@ -31,8 +31,6 @@ def get_lunr_posts_index(subreddits: list[dict]):
 
     chunks = [to_index[i * chunk_size:(i + 1) * chunk_size] for i in range((len(to_index) + chunk_size - 1) // chunk_size )]
     for chunk in chunks:
-        for t in chunk:
-            print(t, '\n\n\n')
         idxs.append(lunr(
             ref='id',
             fields=[
