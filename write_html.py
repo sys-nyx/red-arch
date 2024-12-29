@@ -116,7 +116,6 @@ def generate_html(subs: list[str], sub_dict, min_score=0, min_comments=0, hide_d
         stat_links += len(threads)
         stat_sub_links += len(threads)
         for t in threads:
-            print(t['id'])
             if validate_link(t, min_score, min_comments):
                 write_link_page(subs, t, sub, hide_deleted_comments)
                 built += 1

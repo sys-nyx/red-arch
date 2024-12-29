@@ -7,6 +7,6 @@ comments = funny_comments.zst
 posts = funny_submissions.zst
 
 #Add other subs if you like
-[funnymemes]
-comments = funnymemes_comments.zst
-posts = funnymemes_submissions.zst
+#[funnymemes]
+#comments = funnymemes_comments.zst
+#posts = funnymemes_submissions.zst
