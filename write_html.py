@@ -94,17 +94,17 @@ with open('templates/partial_url.html', 'r', encoding='utf-8') as file:
 
 process = psutil.Process(os.getpid())
 
-def generate_html(subs: list[str], sub_dict, min_score=0, min_comments=0, hide_deleted_comments=False):
+def generate_html(subreddits, min_score=0, min_comments=0, hide_deleted_comments=False):
     delta = timedelta(days=1)
     user_index = {}
     processed_subs = []
     stat_links = 0
     stat_filtered_links = 0
-
+    subs = [s.lower() for s in subreddits.keys()]
     for sub in subs:
         print("Building current sub: ", sub)
 
-        threads = sub_dict[sub]
+        threads = subreddits[sub]
         print("Total threads to convert: ", len(threads))
         built = 0
         # write link pages
