@@ -9,42 +9,96 @@ from urllib.parse import urlparse
 from write_html import generate_html
 from watchful import return_redd_objects
 
-def get_lunr_posts_index(subreddits: list[dict]):
-    print('Generating search index')
+def rebuild_threads(threads: list[dict], comments:list[dict]) -> list[dict]:
+    print('Rebuilding threads...')
+    threads_dict = {}
+
+    for t in threads:
+        t['comments'] = []
+        threads_dict[t['id']] = t
+        t['subreddit'] = t['subreddit'].lower()
+
+    for c in comments:
+        if 'permalink' not in c.keys():
+            continue
+
+        parent_thread_id = c['permalink'].split('/')[4]
+
+        if parent_thread_id not in threads_dict.keys():
+            continue
+
+        threads_dict[parent_thread_id]['comments'].append(c)
+
+    return [threads_dict[t] for t in threads_dict.keys()]
+
+
+def rebuild_subreddits(threads: list[dict]) -> dict:
+    print("Rebuilding subreddits...")
+    subreddits = {}
+
+    for t in threads:
+        if t['subreddit'] not in subreddits.keys():
+            subreddits[t['subreddit']] = []
+        subreddits[t['subreddit']].append(t)
+
+    return subreddits
+
+
+def get_thread_meta(thread: dict) -> dict:
+    return {
+        'id': thread['id'],
+        'path': thread['permalink'].lower().replace(f'r/{thread["subreddit"]}', '').strip('/') + '.html',
+        'title': thread['title'],
+        'score': thread['score'],
+        'replies': str(len(thread['comments'])),
+        'body_short': thread['selftext'][:200],
+        'date': thread['created_utc'],
+    }
+
+
+def get_comment_meta(comment: dict) -> dict:
+    return {
+        'id': comment['id'],
+        'path': comment['path'],
+        'title': comment['title'],
+        'score': comment['score'],
+        'body_short': comment['selftext'][:200],
+        'date': comment['created_utc'],
+    }
+
+
+def get_lunr_index(subreddits: list[dict]):
+    print('Generating search index...')
     to_index = []
     chunk_size = 1000
     idxs = []
     metadata = {}
     for s in subreddits.keys():
         for t in subreddits[s]:
-            meta = {}
-            t['path'] = t['permalink'].lower().replace(f'r/{s}', '').strip('/') + '.html'
-            meta['path'] = t['path']
-            meta['title'] = t['title']
-            meta['score'] = t['score']
-            meta['replies'] = str(len(t['comments']))
-            meta['body_short'] = t['selftext'][:200]
-            meta['date'] = t['created_utc']
+            meta = get_thread_meta(t)
             metadata[t['id']] = meta
-
-            to_index.append(t)
+            i = (t, {'boost': t['score']})
+            to_index.append(i)
 
     chunks = [to_index[i * chunk_size:(i + 1) * chunk_size] for i in range((len(to_index) + chunk_size - 1) // chunk_size )]
     for chunk in chunks:
+        print(f'\rParsing index chunk: {chunks.index(chunk) + 1}/{len(chunks)}', end='')
+
         idxs.append(lunr(
             ref='id',
             fields=[
-                'id',
                 dict(field_name='title', boost=15),
                 dict(field_name='selftext', boost=10),
                 'score',
                 'author'
             ],
             documents=chunk,
-            ))
-        print(f'\rCreating index chunk: {chunks.index(chunk) + 1}/{len(chunks)}', end='')
+        ))
+
     print('')
     return idxs, metadata
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str, help='Path to configuration file.')
@@ -56,58 +110,24 @@ def main():
     config = configparser.ConfigParser()
     config.read(args.config)
 
-    subreddits = {}
+    raw_posts = []
+    raw_comments = []
 
     for s in config.sections():
-        
+
         posts_path = config[s]['posts']
         comments_path = config[s]['comments']
-
-        links = []
         
-        print(f"loading from {posts_path}")
-        raw_posts = return_redd_objects(posts_path)
-        print('done')
-        print(f"loading from {comments_path}")
-        raw_comments = return_redd_objects(comments_path)
-        print('done')
+        print(f"Loading from {posts_path}")
+        raw_posts += return_redd_objects(posts_path)
+        
+        print(f"Loading from {comments_path}")
+        raw_comments += return_redd_objects(comments_path)
 
-        missing_perm = []
-        comments = {}
-        for c in raw_comments:
-            if 'permalink' not in c.keys():
-                missing_perm.append(c)
-                continue
-            
-            parent_url = '/'.join(urlparse(c['permalink']).path.split('/')[:6])
-            if parent_url.endswith('/'):
-                parent_url = parent_url[:-1]
-            if parent_url not in comments.keys():
-                comments[parent_url] = []
-            comments[parent_url].append(c)
+    threads = rebuild_threads(raw_posts, raw_comments)
+    subreddits = rebuild_subreddits(threads)
 
-
-        complete_reddit_threads = []
-
-        for p in raw_posts:
-            p['comments'] = []
-            postp = urlparse(p['permalink']).path
-            if postp.endswith('/'):
-                postp = postp[:-1]
-            if postp in comments.keys():
-                p['comments'] = comments[postp]
-
-                complete_reddit_threads.append(p)
-
-        subreddits[s.lower()] = complete_reddit_threads
-
-    print("Total threads: ",len(raw_posts))
-    print("Total comments: ", len(raw_comments))
-    print("Comments missing permalinks: ", len(missing_perm))
-    print("Comment chains found: ", len(comments))
-    print("Threads rebuilt: ", len(complete_reddit_threads))
-
-    idxs, metadata = get_lunr_posts_index(subreddits)
+    idxs, metadata = get_lunr_index(subreddits)
 
     os.makedirs('r/static/js/search/', exist_ok=True)
 
@@ -119,12 +139,15 @@ def main():
         print(f'\rWriting: {idx_name}',end='')
         with open(f'r/{idx_name}', 'w') as f:
             json.dump(idx.serialize(),f)
+
     with open('r/static/js/search/search-idx-list.json','w') as f:
         json.dump(idx_path_list, f)
+
     with open('r/static/js/search/metadata.json', 'w') as f:
         json.dump(metadata, f)
     print('')
-    generate_html([s.lower() for s in config.sections()], subreddits)
+
+    generate_html(subreddits)
 
 if __name__ == "__main__":
     main()
