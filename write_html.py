@@ -7,12 +7,11 @@ import re
 import psutil
 
 url_project = 'https://github.com/libertysoft3/reddit-html-archiver'
-links_per_page = 30
+links_per_page = 100
 pager_skip = 10
 pager_skip_long = 100
 start_date = date(2005, 1, 1)
 end_date = datetime.today().date() + timedelta(days=1)
-source_data_links = 'links.csv'
 max_comment_depth = 8 # mostly for mobile, which might be silly
 removed_content_identifiers = ['[deleted]','deleted','[removed]','removed']
 default_sort = 'score'
@@ -102,7 +101,7 @@ def generate_html(subreddits, min_score=0, min_comments=0, hide_deleted_comments
     stat_filtered_links = 0
     subs = [s.lower() for s in subreddits.keys()]
     for sub in subs:
-        print("Building current sub: ", sub)
+        print("Building sub: ", sub)
 
         threads = subreddits[sub]
         print("Total threads to convert: ", len(threads))
@@ -218,7 +217,7 @@ def write_subreddit_pages(subreddit, subs, link_index, stat_sub_filtered_links, 
                 '###URL_IDX_SCORE###':          sort_based_prefix + 'index.html',
                 '###URL_IDX_CMNT###':           sort_based_prefix + 'index-' + sort_indexes['num_comments']['slug'] + '/index.html',
                 '###URL_IDX_DATE###':           sort_based_prefix + 'index-' + sort_indexes['created_utc']['slug'] + '/index.html',
-                '###URL_SEARCH###':             sort_based_prefix + 'search.html',
+                '###URL_SEARCH###':             '/search.html',
                 '###URL_IDX_SCORE_CSS###':      'active' if sort == 'score' else '',
                 '###URL_IDX_CMNT_CSS###':       'active' if sort == 'num_comments' else '',
                 '###URL_IDX_DATE_CSS###':       'active' if sort == 'created_utc' else '',
@@ -332,7 +331,7 @@ def write_link_page(subreddits, link, subreddit='', hide_deleted_comments=False)
         '###URL_SUB###':            static_include_path + subreddit + '/index.html',
         '###URL_SUB_CMNT###':       static_include_path + subreddit + '/index-' + sort_indexes['num_comments']['slug'] + '/index.html',
         '###URL_SUB_DATE###':       static_include_path + subreddit + '/index-' + sort_indexes['created_utc']['slug'] + '/index.html',
-        '###URL_SEARCH###':         static_include_path + subreddit + '/search.html',
+        '###URL_SEARCH###':         static_include_path + '/search.html',
         '###HTML_SUBS_MENU###':     subs_menu_html,
         '###HTML_SELFTEXT###':      selftext_html,
         '###HTML_COMMENTS###':      comments_html,

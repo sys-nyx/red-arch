@@ -1,12 +1,13 @@
 
-#subreddit name
-[funny]
+#label for organizational purposes
+[transdiy]
 #path to pushshift comments file
-comments = funny_comments.zst
+comments = funnymemes_comments.zst
 #path to pushshift submissions file
-posts = funny_submissions.zst
+posts = funnymemes_submissions.zst
 
-#Add other subs if you like
-#[funnymemes]
-#comments = funnymemes_comments.zst
-#posts = funnymemes_submissions.zst
+
+# Add as many other sections as you want.
+[funnymemescontinued]
+comments = funnymemes_comments.zst
+posts = funnymemes_submissions.zst

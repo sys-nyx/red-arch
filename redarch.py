@@ -5,6 +5,7 @@ import json
 import argparse
 import configparser
 from lunr import lunr
+from datetime import datetime
 from urllib.parse import urlparse
 from write_html import generate_html
 from watchful import return_redd_objects
@@ -52,7 +53,9 @@ def get_thread_meta(thread: dict) -> dict:
         'score': thread['score'],
         'replies': str(len(thread['comments'])),
         'body_short': thread['selftext'][:200],
-        'date': thread['created_utc'],
+        'date': datetime.utcfromtimestamp(int(thread['created_utc'])).strftime('%Y-%m-%d'),
+        'author': thread['author'],
+        'subreddit': thread['subreddit']
     }
 
 
@@ -63,7 +66,8 @@ def get_comment_meta(comment: dict) -> dict:
         'title': comment['title'],
         'score': comment['score'],
         'body_short': comment['selftext'][:200],
-        'date': comment['created_utc'],
+        'date': datetime.utcfromtimestamp(int(comment['created_utc'])).strftime('%Y-%m-%d'),
+        'author': comment['author']
     }
 
 
