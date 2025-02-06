@@ -48,7 +48,7 @@ The maintainers of this repo are NOT responsible for any problems with your syst
 
 
 ## TODO
-- Incorporate a local, static site search such as [lunrjs](https://github.com/olivernn/lunr.js)
+- ~~Incorporate a local, static site search such as [lunrjs](https://github.com/olivernn/lunr.js)~~
 - Create a more modular API for parsing data from a variety of sources
 - Create a web scraper with a more robust feature set
 - Refactor code and improve buildtime
